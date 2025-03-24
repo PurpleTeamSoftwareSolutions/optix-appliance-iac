@@ -1,0 +1,56 @@
+{
+  "variables": {
+    "azure_client_id": "{{env `AZURE_CLIENT_ID`}}",
+    "azure_client_secret": "{{env `AZURE_CLIENT_SECRET`}}",
+    "azure_subscription_id": "{{env `AZURE_SUBSCRIPTION_ID`}}",
+    "azure_tenant_id": "{{env `AZURE_TENANT_ID`}}",
+    "azure_location": "{{env `AZURE_LOCATION`}}",
+    "azure_vm_size": "{{env `AZURE_VM_SIZE`}}",
+    "azure_resource_group_name": "{{env `AZURE_RESOURCE_GROUP_NAME`}}",
+    "optix_appliance_name": "optix-appliance-{{ timestamp }}"
+  },
+  "builders": [
+    {
+      "type": "azure-arm",
+
+      "client_id": "{{user `azure_client_id`}}",
+      "client_secret": "{{user `azure_client_secret`}}",
+      "subscription_id": "{{user `azure_subscription_id`}}",
+      "tenant_id": "{{user `azure_tenant_id`}}",
+
+      "managed_image_name": "{{user `optix_appliance_name`}}",
+      "managed_image_resource_group_name": "{{user `azure_resource_group_name`}}",
+
+      "os_type": "Linux",
+      "image_publisher": "Canonical",
+      "image_offer": "0001-com-ubuntu-server-jammy",
+      "image_sku": "24_04-lts-gen2",
+
+    "azure_tags": {
+      "OS_Version": "Ubuntu",
+      "Release": "Latest",
+      "IMAGE_Name": "{{user `optix_appliance_name`}}",
+      "Name": "{{user `optix_appliance_name`}}-image"
+    },
+
+    "location": "{{user `azure_location`}}",
+    "vm_size": "{{user `azure_vm_size`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "configs/purpleteamsoftware.list",
+      "destination": "/tmp/"
+    },
+     {
+      "type": "file",
+      "source": "configs/sudoers",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/provision-ami.sh"
+    }
+  ]
+}

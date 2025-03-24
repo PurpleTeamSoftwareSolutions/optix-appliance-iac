@@ -1,0 +1,47 @@
+{
+  "variables": {
+    "optix_appliance_name": "optix-appliance-{{ timestamp }}",
+    "http_directory": "http/"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "iso_url": "ubuntu-24.04.1-live-server-amd64.iso",
+      "iso_checksum": "sha256:e240e4b801f7bb68c20d1356b60968ad0c33a41d00d828e74ceb3364a0317be9",
+      "boot_wait": "5s",
+      "cd_files" : [
+        "{{user `http_directory`}}meta-data",
+        "{{user `http_directory`}}user-data"
+      ],
+      "cd_label": "cidata",
+      "boot_command": [
+        "e<down><down><down><end>",
+        " autoinstall ds=nocloud;",
+        "<F10>"
+      ],
+      "shutdown_command": "sudo poweroff",
+      "ssh_username": "ubuntu",
+      "ssh_password": "Youshou1dch@ng3measap",
+      "ssh_pty": true,
+      "ssh_timeout": "30m",
+      "ssh_handshake_attempts": "85",
+      "guest_os_type": "ubuntu64Guest",
+      "vm_name": "{{user `optix_appliance_name`}}",
+      "cpus": 4,
+      "memory": 4096,
+      "disk_size": 81920,
+      "format": "ova"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "configs/sudoers",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/cleanup-ova.sh"
+    }
+  ]
+}
