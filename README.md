@@ -1,6 +1,6 @@
 # Optix Appliance IAC #
-[Command Center](https://www.critical-sec.com/command-center/) is a full featured vulnerability management platform for penetration testing teams. Command Center Scanner is the client application designed to perform tasks during penetration tests and security audits using
-Docker containers. This repository contains packer files and scripts to automate building AMI, Azure, and VMware images of CCScanner.
+[CyberOptix](https://purpleteamsoftware.com/cyberoptix/) is a full featured vulnerability management platform for Red and Blue teams. The CyberOptix appliance is the client application designed to perform tasks during penetration tests and security audits using
+Docker containers. This repository contains packer files and scripts to automate building OVA, AMI, and Azure images of the Optix Appliance.
 
 # Step 1 ) #
 
@@ -9,7 +9,7 @@ Docker containers. This repository contains packer files and scripts to automate
 **_Download packer:_**
 
 1) Download the proper Packer binary from https://www.packer.io/downloads.
-2) Unzip the package into the `ccscanner-iac` directory.
+2) Unzip the package into the `optix-appliance-iac` directory.
 
 
 ## On Windows OS ##
