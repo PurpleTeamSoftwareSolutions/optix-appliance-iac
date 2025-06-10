@@ -35,7 +35,7 @@
       "machine_type": "pc",
       "net_device": "virtio-net",
       "disk_interface": "virtio",
-      "headless": true
+      "headless": false
     }
   ],
   "provisioners": [
