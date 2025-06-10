@@ -39,13 +39,36 @@ network:
       dhcp4: true
 EOF
 
-# Remove any existing netplan configs that might conflict
 sudo find /etc/netplan -name "*.yaml" -not -name "01-network.yaml" -delete 2>/dev/null || true
 
 echo "cleanup /tmp directories"
 #cleanup /tmp directories
 sudo rm -rf /tmp/*
 sudo rm -rf /var/tmp/*
+
+echo "harden ssh configuration"
+#harden ssh configuration
+sudo tee /etc/ssh/sshd_config > /dev/null <<EOF
+Protocol 2
+Port 22
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+UsePAM yes
+X11Forwarding no
+PrintMotd no
+TCPKeepAlive yes
+ClientAliveInterval 300
+ClientAliveCountMax 2
+MaxAuthTries 3
+MaxStartups 2
+LoginGraceTime 30
+KexAlgorithms diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha256,curve25519-sha256,sntrup761x25519-sha512@openssh.com,curve25519-sha256@libssh.org
+Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com
+MACs hmac-sha2-256,hmac-sha2-512,umac-128@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
+HostKeyAlgorithms ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-ed25519,ssh-rsa
+EOF
 
 echo "cleanup current ssh keys"
 #cleanup current ssh keys
@@ -54,7 +77,7 @@ sudo rm -f /etc/ssh/ssh_host_*
 echo "regenerate on boot"
 #regenerate on boot
 sudo sh -c 'echo "#! /bin/bash" > /etc/rc.local'
-sudo sh -c 'echo "test -f /etc/ssh/ssh_host_dsa_key || dpkg-reconfigure openssh-server" >> /etc/rc.local'
+sudo sh -c 'echo "test -f /etc/ssh/ssh_host_ed25519_key || dpkg-reconfigure openssh-server" >> /etc/rc.local'
 sudo sh -c 'echo "exit 0" >> /etc/rc.local'
 sudo chmod +x /etc/rc.local
 
