@@ -22,7 +22,7 @@ echo "Creating VM disk for $VM_NAME..."
 sudo qemu-img create -f qcow2 -F qcow2 -b "$TEMPLATE_IMAGE" "$VM_IMAGE" 150G
 
 # Create cloud-init user-data
-cat > /tmp/user-data-${VM_NAME} << EOF
+cat > /tmp/user-data-"${VM_NAME}" << EOF
 #cloud-config
 hostname: ${VM_NAME}
 manage_etc_hosts: true
@@ -55,7 +55,7 @@ final_message: "VM ${VM_NAME} is ready with IP ${IP_ADDRESS}"
 EOF
 
 # Create cloud-init meta-data
-cat > /tmp/meta-data-${VM_NAME} << EOF
+cat > /tmp/meta-data-"${VM_NAME}" << EOF
 instance-id: ${VM_NAME}
 local-hostname: ${VM_NAME}
 EOF
@@ -64,7 +64,7 @@ EOF
 echo "Creating cloud-init configuration..."
 sudo genisoimage -output /var/lib/libvirt/images/${VM_NAME}-cidata.iso \
     -volid cidata -joliet -rock \
-    /tmp/user-data-${VM_NAME} /tmp/meta-data-${VM_NAME}
+    /tmp/user-data-"${VM_NAME}" /tmp/meta-data-${VM_NAME}
 
 # Deploy VM
 echo "Deploying VM $VM_NAME with IP $IP_ADDRESS..."
@@ -82,7 +82,7 @@ sudo virt-install \
     --noautoconsole
 
 # Cleanup temp files
-rm -f /tmp/user-data-${VM_NAME} /tmp/meta-data-${VM_NAME}
+rm -f /tmp/user-data-"${VM_NAME}" /tmp/meta-data-"${VM_NAME}"
 
 echo "VM $VM_NAME deployed successfully!"
 echo "IP: $IP_ADDRESS"
