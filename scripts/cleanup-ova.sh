@@ -50,8 +50,8 @@ echo "cleanup apt"
 #cleanup apt
 sudo apt clean
 
-curl https://apt.fury.io/purpleteamsoftware/gpg.key | sudo apt-key add -
-sudo echo "deb [signed-by=/etc/apt/trusted.gpg] https://apt.purpleteamsoftware.com/ /" | sudo tee -a /etc/apt/sources.list.d/purpleteamsoftware.list
+wget -O - https://apt.fury.io/purpleteamsoftware/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/purpleteamsoftware-archive-keyring.gpg
+sudo echo "deb [signed-by=/usr/share/keyrings/purpleteamsoftware-archive-keyring.gpg] https://apt.purpleteamsoftware.com/ /" | sudo tee -a /etc/apt/sources.list.d/purpleteamsoftware.list
 
 sudo sed -i '/swap/ s/^/#/' /etc/fstab
 sudo sed -i '/127\.0\.1\.1/ s/^/#/' /etc/hosts
