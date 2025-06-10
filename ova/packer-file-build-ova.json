@@ -34,7 +34,6 @@
       "qemu_binary": "qemu-system-x86_64",
       "net_device": "virtio-net",
       "disk_interface": "virtio",
-      "headless": false,
       "use_backing_file": false,
       "qemuargs": [
         ["-display", "vnc=0.0.0.0:80"]
