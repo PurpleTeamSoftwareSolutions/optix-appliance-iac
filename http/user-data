@@ -9,7 +9,7 @@ autoinstall:
     network:
       version: 2
       ethernets:
-        enp1s0:
+        ens3:
           dhcp4: true
   storage:
     layout:
