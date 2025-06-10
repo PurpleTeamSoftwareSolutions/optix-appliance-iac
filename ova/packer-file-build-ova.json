@@ -5,7 +5,8 @@
   },
   "builders": [
     {
-      "type": "qemu",
+      "type": "libvirt",
+      "libvirt_uri": "qemu:///system",
       "iso_url": "ubuntu-24.04.2-live-server-amd64.iso",
       "iso_checksum": "sha256:d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d",
       "boot_wait": "5s",
@@ -25,17 +26,12 @@
       "ssh_pty": true,
       "ssh_timeout": "30m",
       "ssh_handshake_attempts": 85,
-      "vm_name": "{{user `optix_appliance_name`}}",
-      "cpus": 4,
+      "domain_name": "{{user `optix_appliance_name`}}",
+      "vcpu": 4,
       "memory": 16384,
       "disk_size": "150G",
-      "format": "qcow2",
-      "accelerator": "kvm",
-      "qemu_binary": "qemu-system-x86_64",
-      "net_device": "virtio-net",
-      "disk_interface": "virtio",
-      "headless": false,
-      "use_backing_file": false
+      "network_interface": "virtio-net",
+      "disk_bus": "virtio"
     }
   ],
   "provisioners": [
