@@ -50,6 +50,12 @@ echo "cleanup apt"
 #cleanup apt
 sudo apt clean
 
+curl https://apt.fury.io/purpleteamsoftware/gpg.key | sudo apt-key add -
+sudo echo "deb [signed-by=/etc/apt/trusted.gpg] https://apt.purpleteamsoftware.com/ /" | sudo tee -a /etc/apt/sources.list.d/purpleteamsoftware.list
+
+sudo sed -i '/swap/ s/^/#/' /etc/fstab
+sudo sed -i '/127\.0\.1\.1/ s/^/#/' /etc/hosts
+
 echo "extend the drive"
 sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
 sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
