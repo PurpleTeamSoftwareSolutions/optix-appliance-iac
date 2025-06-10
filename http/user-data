@@ -14,15 +14,19 @@ autoinstall:
   storage:
     layout:
       name: lvm
+  source:
+    id: ubuntu-server-minimal
+    search_drivers: false
   ssh:
     install-server: yes
     allow-pw: yes
+  updates: security
   identity:
     hostname: optix-appliance
     username: ubuntu
     password: $6$IyUb/t6RTkUbb0id$tFj4F2mobB3vwscLPcRlfWkesMUC5HvPOTUV.8xemXe.ez4SD3IVqcdDyDY0YJzXtk3ueDI6txvLCoVPvOihQ.
   user-data:
-    disable_root: false
+    disable_root: yes
     users:
       - name: ubuntu
         groups: [sudo, adm]
@@ -38,5 +42,3 @@ autoinstall:
     - htop
     - redis-tools
   package_upgrade: true
-  late-commands:
-    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
