@@ -69,7 +69,7 @@ exit 0
 EOF
 sudo chmod +x /etc/rc.local
 
-echo "Reset hostname (cloud-init will set)"
+echo "Reset hostname"
 sudo truncate -s 0 /etc/hostname
 
 echo "Clean apt cache"
@@ -86,13 +86,5 @@ sudo sed -i '/127\.0\.1\.1/ s/^/#/' /etc/hosts
 echo "Extend disk volume"
 sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
 sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
-
-echo "Force NoCloud datasource for cloud-init"
-sudo tee /etc/cloud/cloud.cfg.d/99_nocloud.cfg > /dev/null <<EOF
-datasource_list: [ NoCloud ]
-EOF
-
-echo "Clean cloud-init state"
-sudo cloud-init clean --logs
 
 echo "Cleanup complete."
