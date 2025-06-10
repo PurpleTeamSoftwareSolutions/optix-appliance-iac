@@ -35,8 +35,7 @@
       "net_device": "virtio-net",
       "disk_interface": "virtio",
       "headless": false,
-      "use_backing_file": false,
-      "libvirt_uri": "qemu:///system"
+      "use_backing_file": false
     }
   ],
   "provisioners": [
