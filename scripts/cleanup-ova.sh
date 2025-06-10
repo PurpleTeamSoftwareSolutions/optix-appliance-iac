@@ -26,6 +26,22 @@ if [[ -f /etc/udev/rules.d/70-persistent-net.rules ]]; then
     sudo rm /etc/udev/rules.d/70-persistent-net.rules
 fi
 
+echo "configure universal netplan config"
+#configure universal netplan config for cross-platform compatibility
+sudo mkdir -p /etc/netplan
+sudo tee /etc/netplan/01-network.yaml > /dev/null <<EOF
+network:
+  version: 2
+  ethernets:
+    all-en:
+      match:
+        name: "en*"
+      dhcp4: true
+EOF
+
+# Remove any existing netplan configs that might conflict
+sudo find /etc/netplan -name "*.yaml" -not -name "01-network.yaml" -delete 2>/dev/null || true
+
 echo "cleanup /tmp directories"
 #cleanup /tmp directories
 sudo rm -rf /tmp/*
