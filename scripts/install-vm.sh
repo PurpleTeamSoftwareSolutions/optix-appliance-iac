@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# VM deployment script with IP injection
+# VM deployment script with IP injection and VNC support
 # Usage: ./deploy-vm.sh <vm-name> <ip-address> <gateway> <dns>
 
 VM_NAME="$1"
@@ -76,6 +76,8 @@ sudo virt-install \
     --disk path="/var/lib/libvirt/images/${VM_NAME}-cidata.iso",device=cdrom \
     --network type=direct,source=bond1.2,source_mode=bridge,model=virtio \
     --os-variant ubuntu24.04 \
+    --graphics vnc,listen=0.0.0.0,port=-1 \
+    --video virtio \
     --import \
     --noautoconsole
 
@@ -85,3 +87,4 @@ rm -f /tmp/user-data-${VM_NAME} /tmp/meta-data-${VM_NAME}
 echo "VM $VM_NAME deployed successfully!"
 echo "IP: $IP_ADDRESS"
 echo "You can connect via: ssh ubuntu@$IP_ADDRESS"
+echo "VNC console available through Cockpit or virsh console"
