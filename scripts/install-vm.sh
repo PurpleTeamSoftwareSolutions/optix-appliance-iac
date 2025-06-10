@@ -7,8 +7,8 @@ VM_NAME="$1"
 IP_ADDRESS="$2"
 GATEWAY="${3:-192.168.1.1}"
 DNS="${4:-8.8.8.8}"
-TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance-1749575228.qcow2"
-VM_IMAGE="/var/lib/libvirt/images/${VM_NAME}.qcow2"
+TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance-1749581169.qcow2"
+VM_IMAGE="/kvm/scanners/${VM_NAME}.qcow2"
 
 # Validate arguments
 if [[ -z "$VM_NAME" || -z "$IP_ADDRESS" ]]; then
@@ -21,50 +21,26 @@ fi
 echo "Creating VM disk for $VM_NAME..."
 sudo qemu-img create -f qcow2 -F qcow2 -b "$TEMPLATE_IMAGE" "$VM_IMAGE" 150G
 
-# Create cloud-init user-data
-cat > /tmp/user-data-"${VM_NAME}" << EOF
-#cloud-config
-hostname: ${VM_NAME}
-manage_etc_hosts: true
 
-# Network configuration
-write_files:
-  - path: /etc/netplan/01-network.yaml
-    content: |
-      network:
-        version: 2
-        ethernets:
-          all-en:
-            match:
-              name: "en*"
-            dhcp4: false
-            addresses: [${IP_ADDRESS}]
-            gateway4: ${GATEWAY}
-            nameservers:
-              addresses: [${DNS}]
-    permissions: '0644'
-
-# Run commands on first boot
-runcmd:
-  - netplan apply
-  - systemctl restart networking
-  - hostnamectl set-hostname ${VM_NAME}
-
-# Final message
-final_message: "VM ${VM_NAME} is ready with IP ${IP_ADDRESS}"
-EOF
-
-# Create cloud-init meta-data
-cat > /tmp/meta-data-"${VM_NAME}" << EOF
-instance-id: ${VM_NAME}
-local-hostname: ${VM_NAME}
-EOF
-
-# Create cloud-init ISO
-echo "Creating cloud-init configuration..."
-sudo genisoimage -output /var/lib/libvirt/images/${VM_NAME}-cidata.iso \
-    -volid cidata -joliet -rock \
-    /tmp/user-data-"${VM_NAME}" /tmp/meta-data-${VM_NAME}
+# Inject static IP
+virt-customize -a /kvm/scanners/"${VM_NAME}".qcow2 \
+  --run-command "mkdir -p /etc/netplan" \
+  --run-command "cat > /etc/netplan/01-network.yaml <<EOF
+network:
+  version: 2
+  ethernets:
+    all-en:
+      match:
+        name: \"en*\"
+      dhcp4: false
+      addresses: [${IP_ADDRESS}]
+      gateway4: ${GATEWAY}
+      nameservers:
+        addresses: [${DNS}]
+EOF" \
+  --run-command "echo ${VM_NAME} > /etc/hostname" \
+  --run-command "hostnamectl set-hostname ${VM_NAME}" \
+  --run-command "netplan generate"
 
 # Deploy VM
 echo "Deploying VM $VM_NAME with IP $IP_ADDRESS..."
@@ -73,7 +49,6 @@ sudo virt-install \
     --memory 16384 \
     --vcpus 4 \
     --disk path="$VM_IMAGE",bus=virtio \
-    --disk path="/var/lib/libvirt/images/${VM_NAME}-cidata.iso",device=cdrom \
     --network type=direct,source=bond1.2,source_mode=bridge,model=virtio \
     --os-variant ubuntu24.04 \
     --graphics vnc,listen=0.0.0.0,port=-1 \
@@ -83,6 +58,7 @@ sudo virt-install \
 
 # Cleanup temp files
 rm -f /tmp/user-data-"${VM_NAME}" /tmp/meta-data-"${VM_NAME}"
+sudo rm -f /kvm/scanners/"${VM_NAME}"-cidata.iso
 
 echo "VM $VM_NAME deployed successfully!"
 echo "IP: $IP_ADDRESS"

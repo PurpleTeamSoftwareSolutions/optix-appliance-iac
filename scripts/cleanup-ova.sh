@@ -15,10 +15,23 @@ echo "Clear audit logs"
 echo "Cleanup persistent udev rules"
 sudo rm -f /etc/udev/rules.d/70-persistent-net.rules
 
-echo "Remove netplan override (leave to cloud-init)"
-sudo rm -f /etc/netplan/01-network.yaml
+echo "configure universal netplan config"
+#configure universal netplan config for cross-platform compatibility
+sudo mkdir -p /etc/netplan
+sudo tee /etc/netplan/01-network.yaml > /dev/null <<EOF
+network:
+  version: 2
+  ethernets:
+    all-en:
+      match:
+        name: "en*"
+      dhcp4: true
+EOF
 
-echo "Cleanup /tmp and /var/tmp"
+sudo find /etc/netplan -name "*.yaml" -not -name "01-network.yaml" -delete 2>/dev/null || true
+
+echo "cleanup /tmp directories"
+#cleanup /tmp directories
 sudo rm -rf /tmp/*
 sudo rm -rf /var/tmp/*
 
