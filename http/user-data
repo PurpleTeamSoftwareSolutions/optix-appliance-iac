@@ -21,7 +21,7 @@ autoinstall:
     install-server: yes
     ssh_pwauth: yes
   identity:
-    hostname: optix-appliance-ova
+    hostname: optix-appliance
     username: ubuntu
     password: $6$IyUb/t6RTkUbb0id$tFj4F2mobB3vwscLPcRlfWkesMUC5HvPOTUV.8xemXe.ez4SD3IVqcdDyDY0YJzXtk3ueDI6txvLCoVPvOihQ.
   user-data:
@@ -32,67 +32,14 @@ autoinstall:
         lock-passwd: false
         shell: /bin/bash
   package_update: true
-  apt:
-     sources:
-       purpleteamsoftware.list:
-         source: "deb [signed-by=/etc/apt/trusted.gpg] https://apt.purpleteamsoftware.com/ /"
-         filename: purpleteamsoftware.list
-         key: |
-            -----BEGIN PGP PUBLIC KEY BLOCK-----
-            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
-            GkQXSDPe7pvVYBJ/etHdNQY=
-            =H9ir
-            -----END PGP PUBLIC KEY BLOCK-----
   packages:
     - open-vm-tools
+    - rsyslog
+    - vim
+    - bash-completion
+    - rsyslog
+    - htop
+    - redis-tools
   package_upgrade: true
   late-commands:
     - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
