@@ -6,7 +6,7 @@
   "builders": [
     {
       "type": "qemu",
-      "iso_url": "ubuntu-24.04.2-live-server-amd64.iso",
+      "iso_url": "https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso",
       "iso_checksum": "sha256:d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d",
       "boot_wait": "5s",
       "cd_files": [
@@ -27,15 +27,16 @@
       "ssh_handshake_attempts": 85,
       "vm_name": "{{user `optix_appliance_name`}}",
       "cpus": 4,
-      "memory": 4096,
+      "memory": 16384,
       "disk_size": "150G",
       "format": "qcow2",
       "accelerator": "kvm",
       "qemu_binary": "qemu-system-x86_64",
-      "machine_type": "pc",
       "net_device": "virtio-net",
       "disk_interface": "virtio",
-      "headless": false
+      "headless": false,
+      "use_backing_file": false,
+      "libvirt_uri": "qemu:///system"
     }
   ],
   "provisioners": [
