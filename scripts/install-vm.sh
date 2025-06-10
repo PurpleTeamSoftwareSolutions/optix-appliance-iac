@@ -19,7 +19,7 @@ fi
 
 # Create VM disk from template
 echo "Creating VM disk for $VM_NAME..."
-sudo qemu-img create -f qcow2 -F qcow2 -b "$TEMPLATE_IMAGE" "$VM_IMAGE" 20G
+sudo qemu-img create -f qcow2 -F qcow2 -b "$TEMPLATE_IMAGE" "$VM_IMAGE" 150G
 
 # Create cloud-init user-data
 cat > /tmp/user-data-${VM_NAME} << EOF
