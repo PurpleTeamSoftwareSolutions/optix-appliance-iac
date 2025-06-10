@@ -7,7 +7,7 @@ VM_NAME="$1"
 IP_ADDRESS="$2"
 GATEWAY="${3:-192.168.1.1}"
 DNS="${4:-8.8.8.8}"
-TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance-1749581169.qcow2"
+TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance-1749590641.qcow2"
 VM_IMAGE="/kvm/scanners/${VM_NAME}.qcow2"
 
 # Validate arguments
@@ -19,8 +19,7 @@ fi
 
 # Create VM disk from template
 echo "Creating VM disk for $VM_NAME..."
-sudo qemu-img create -f qcow2 -F qcow2 -b "$TEMPLATE_IMAGE" "$VM_IMAGE" 150G
-
+qemu-img create -f qcow2 -F qcow2 -b "$TEMPLATE_IMAGE" "$VM_IMAGE" 150G
 
 # Inject static IP
 virt-customize -a /kvm/scanners/"${VM_NAME}".qcow2 \
@@ -38,13 +37,11 @@ network:
       nameservers:
         addresses: [${DNS}]
 EOF" \
-  --run-command "echo ${VM_NAME} > /etc/hostname" \
-  --run-command "hostnamectl set-hostname ${VM_NAME}" \
-  --run-command "netplan generate"
+  --run-command "echo ${VM_NAME} > /etc/hostname"
 
 # Deploy VM
 echo "Deploying VM $VM_NAME with IP $IP_ADDRESS..."
-sudo virt-install \
+virt-install \
     --name "$VM_NAME" \
     --memory 16384 \
     --vcpus 4 \
@@ -56,11 +53,4 @@ sudo virt-install \
     --import \
     --noautoconsole
 
-# Cleanup temp files
-rm -f /tmp/user-data-"${VM_NAME}" /tmp/meta-data-"${VM_NAME}"
-sudo rm -f /kvm/scanners/"${VM_NAME}"-cidata.iso
-
 echo "VM $VM_NAME deployed successfully!"
-echo "IP: $IP_ADDRESS"
-echo "You can connect via: ssh ubuntu@$IP_ADDRESS"
-echo "VNC console available through Cockpit or virsh console"
