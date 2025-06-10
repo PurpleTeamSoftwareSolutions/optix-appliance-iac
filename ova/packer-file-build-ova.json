@@ -30,7 +30,12 @@
       "vcpu": 4,
       "memory": 16384,
       "disk_size": "150G",
-      "network_interface": "virtio-net",
+      "network_interface": [
+        {
+          "type": "virtio-net",
+          "source": "default"
+        }
+      ],
       "disk_bus": "virtio"
     }
   ],
