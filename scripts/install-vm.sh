@@ -7,7 +7,7 @@ VM_NAME="$1"
 IP_ADDRESS="$2"
 GATEWAY="${3:-192.168.1.1}"
 DNS="${4:-8.8.8.8}"
-TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance.qcow2"
+TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance-1749575228.qcow2"
 VM_IMAGE="/var/lib/libvirt/images/${VM_NAME}.qcow2"
 
 # Validate arguments
@@ -29,7 +29,7 @@ manage_etc_hosts: true
 
 # Network configuration
 write_files:
-  - path: /etc/netplan/50-cloud-init.yaml
+  - path: /etc/netplan/01-network.yaml
     content: |
       network:
         version: 2
@@ -38,7 +38,7 @@ write_files:
             match:
               name: "en*"
             dhcp4: false
-            addresses: [${IP_ADDRESS}/24]
+            addresses: [${IP_ADDRESS}]
             gateway4: ${GATEWAY}
             nameservers:
               addresses: [${DNS}]
@@ -74,7 +74,7 @@ sudo virt-install \
     --vcpus 4 \
     --disk path="$VM_IMAGE",bus=virtio \
     --disk path="/var/lib/libvirt/images/${VM_NAME}-cidata.iso",device=cdrom \
-    --network type=direct,source=bond1.10,source_mode=bridge,model=virtio \
+    --network type=direct,source=bond1.2,source_mode=bridge,model=virtio \
     --os-variant ubuntu24.04 \
     --import \
     --noautoconsole
