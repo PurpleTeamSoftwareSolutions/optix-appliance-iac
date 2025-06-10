@@ -34,17 +34,15 @@ write_files:
       network:
         version: 2
         ethernets:
-          enp1s0:
+          all-en:
+            match:
+              name: "en*"
             dhcp4: false
             addresses: [${IP_ADDRESS}/24]
             gateway4: ${GATEWAY}
             nameservers:
               addresses: [${DNS}]
     permissions: '0644'
-
-# SSH keys (add your public key here)
-ssh_authorized_keys:
-  - ssh-rsa AAAAB3NzaC1yc2E... # Replace with your actual public key
 
 # Run commands on first boot
 runcmd:
@@ -72,11 +70,11 @@ sudo genisoimage -output /var/lib/libvirt/images/${VM_NAME}-cidata.iso \
 echo "Deploying VM $VM_NAME with IP $IP_ADDRESS..."
 sudo virt-install \
     --name "$VM_NAME" \
-    --memory 4096 \
-    --vcpus 2 \
+    --memory 16384 \
+    --vcpus 4 \
     --disk path="$VM_IMAGE",bus=virtio \
     --disk path="/var/lib/libvirt/images/${VM_NAME}-cidata.iso",device=cdrom \
-    --network bridge=virbr0,model=virtio \
+    --network type=direct,source=bond1.10,source_mode=bridge,model=virtio \
     --os-variant ubuntu24.04 \
     --import \
     --noautoconsole

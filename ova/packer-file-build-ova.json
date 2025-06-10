@@ -1,7 +1,6 @@
 {
   "variables": {
     "optix_appliance_name": "optix-appliance-{{ timestamp }}.qcow2",
-    "optix_vm_name": "optix-appliance-{{ timestamp }}",
     "http_directory": "http/"
   },
   "builders": [
@@ -26,7 +25,7 @@
       "ssh_pty": true,
       "ssh_timeout": "30m",
       "ssh_handshake_attempts": 85,
-      "vm_name": "{{user `optix_vm_name`}}",
+      "vm_name": "{{user `optix_appliance_name`}}",
       "cpus": 4,
       "memory": 16384,
       "disk_size": "150G",
