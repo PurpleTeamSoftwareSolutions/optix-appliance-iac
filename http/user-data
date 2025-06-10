@@ -3,44 +3,40 @@ autoinstall:
   version: 1
   locale: en_US
   keyboard:
-    layout: en
-    variant: us
+    layout: us
+    variant: ""
   network:
-    version: 2
-    ethernets: # {}
-        enp0s3:
-            dhcp4: false
-            gateway4: 10.0.2.2
-            addresses: [10.0.2.15/24]
-            nameservers:
-                addresses: [8.8.8.8]
+    network:
+      version: 2
+      ethernets:
+        enp1s0:
+          dhcp4: true
   storage:
     layout:
       name: lvm
   ssh:
     install-server: yes
-    ssh_pwauth: yes
+    allow-pw: yes
   identity:
     hostname: optix-appliance
     username: ubuntu
     password: $6$IyUb/t6RTkUbb0id$tFj4F2mobB3vwscLPcRlfWkesMUC5HvPOTUV.8xemXe.ez4SD3IVqcdDyDY0YJzXtk3ueDI6txvLCoVPvOihQ.
   user-data:
-    disable_root: yes
+    disable_root: false
     users:
       - name: ubuntu
-        groups: sudo, docker
-        lock-passwd: false
+        groups: [sudo, adm]
+        lock_passwd: false
         shell: /bin/bash
+        sudo: ALL=(ALL) NOPASSWD:ALL
   package_update: true
   packages:
     - open-vm-tools
     - rsyslog
     - vim
     - bash-completion
-    - rsyslog
     - htop
     - redis-tools
   package_upgrade: true
   late-commands:
     - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
-    - echo 'optix ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/optix
