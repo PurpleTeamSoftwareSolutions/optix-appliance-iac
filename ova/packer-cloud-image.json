@@ -1,0 +1,76 @@
+{
+  "variables": {
+    "optix_appliance_name": "optix-cloud-{{ timestamp }}.qcow2",
+    "http_directory": "http/",
+    "cloud_image_url": "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img",
+    "cloud_image_checksum": "file:https://cloud-images.ubuntu.com/noble/current/SHA256SUMS"
+  },
+  "builders": [
+    {
+      "type": "qemu",
+      "iso_url": "{{user `cloud_image_url`}}",
+      "iso_checksum": "{{user `cloud_image_checksum`}}",
+      "disk_image": true,
+      "boot_wait": "5s",
+      "cd_files": [
+        "{{user `http_directory`}}meta-data",
+        "{{user `http_directory`}}user-data-minimal"
+      ],
+      "cd_label": "cidata",
+      "shutdown_command": "sudo poweroff",
+      "ssh_username": "ubuntu",
+      "ssh_password": "Youshou1dch@ng3measap",
+      "ssh_pty": true,
+      "ssh_timeout": "20m",
+      "ssh_handshake_attempts": 100,
+      "vm_name": "{{user `optix_appliance_name`}}",
+      "cpus": 2,
+      "memory": 2048,
+      "disk_size": "8G",
+      "disk_compression": true,
+      "disk_detect_zeroes": "unmap",
+      "disk_discard": "unmap",
+      "format": "qcow2",
+      "accelerator": "kvm",
+      "qemu_binary": "qemu-system-x86_64",
+      "net_device": "virtio-net",
+      "disk_interface": "virtio",
+      "use_backing_file": false,
+      "headless": true,
+      "qemuargs": [
+        ["-serial", "mon:stdio"],
+        ["-device", "virtio-net,netdev=user.0"],
+        ["-netdev", "user,id=user.0"]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "configs/sudoers",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/cleanup-cloud-image.sh",
+      "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "environment_vars": [
+        "DEBIAN_FRONTEND=noninteractive"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo sync",
+        "sudo fstrim -av || true"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "compress",
+      "output": "optix-cloud-{{timestamp}}.qcow2.tar.gz",
+      "compression_level": 9
+    }
+  ]
+}
