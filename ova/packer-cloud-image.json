@@ -14,7 +14,7 @@
       "boot_wait": "5s",
       "cd_files": [
         "{{user `http_directory`}}meta-data",
-        "{{user `http_directory`}}user-data-minimal"
+        "{{user `http_directory`}}user-data"
       ],
       "cd_label": "cidata",
       "shutdown_command": "sudo poweroff",
