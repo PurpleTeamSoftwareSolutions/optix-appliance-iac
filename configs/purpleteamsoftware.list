@@ -1,1 +1,1 @@
-deb [signed-by=/etc/apt/trusted.gpg] https://apt.purpleteamsoftware.com/ /
+deb [signed-by=/usr/share/keyrings/purpleteamsoftware-archive-keyring.gpg] https://apt.purpleteamsoftware.com/ /
