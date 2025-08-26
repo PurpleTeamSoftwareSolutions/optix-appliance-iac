@@ -7,7 +7,7 @@ VM_NAME="$1"
 IP_ADDRESS="$2"
 GATEWAY="${3:-192.168.1.1}"
 DNS="${4:-8.8.8.8}"
-TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance-1749590641.qcow2"
+TEMPLATE_IMAGE="/var/lib/libvirt/images/optix-appliance-1749594109.qcow2"
 VM_IMAGE="/kvm/scanners/${VM_NAME}.qcow2"
 
 # Validate arguments
