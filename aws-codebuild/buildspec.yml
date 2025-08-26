@@ -1,0 +1,146 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Installing Packer..."
+      - curl -O https://releases.hashicorp.com/packer/1.10.0/packer_1.10.0_linux_amd64.zip
+      - unzip packer_1.10.0_linux_amd64.zip
+      - chmod +x packer
+      - mv packer /usr/local/bin/
+      - packer version
+      - echo "Installing AWS CLI latest version..."
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - ./aws/install
+      
+  build:
+    commands:
+      - |
+        # Parse regions from environment variable (comma-separated)
+        IFS=',' read -r -a REGIONS <<< "$AWS_REGIONS"
+        
+        # Track build results
+        declare -A BUILD_RESULTS
+        
+        for REGION in "${REGIONS[@]}"; do
+          REGION=$(echo $REGION | xargs)  # Trim whitespace
+          echo "========================================="
+          echo "Building AMIs in region: $REGION"
+          echo "========================================="
+          
+          export AWS_REGION=$REGION
+          
+          # Get region-specific VPC and Subnet
+          VPC_VAR="AWS_VPC_ID_${REGION//-/_}"
+          SUBNET_VAR="AWS_SUBNET_ID_${REGION//-/_}"
+          
+          # Use region-specific values if available, otherwise use defaults
+          export AWS_VPC_ID="${!VPC_VAR:-$AWS_VPC_ID_DEFAULT}"
+          export AWS_SUBNET_ID="${!SUBNET_VAR:-$AWS_SUBNET_ID_DEFAULT}"
+          
+          echo "Using VPC: $AWS_VPC_ID"
+          echo "Using Subnet: $AWS_SUBNET_ID"
+          
+          # Build Ubuntu AMI
+          echo "Building Ubuntu AMI in $REGION..."
+          if packer build \
+            -var "aws_region=$REGION" \
+            appliance/packer-file-AMI-ubuntu.json; then
+            BUILD_RESULTS["ubuntu-$REGION"]="SUCCESS"
+            
+            # Get the AMI ID from the build output
+            AMI_ID=$(aws ec2 describe-images \
+              --region $REGION \
+              --owners self \
+              --filters "Name=name,Values=optix-appliance-*" \
+              --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' \
+              --output text)
+            
+            echo "Ubuntu AMI ID in $REGION: $AMI_ID"
+          else
+            BUILD_RESULTS["ubuntu-$REGION"]="FAILED"
+          fi
+          
+          # Build RHEL9 AMI
+          echo "Building RHEL9 AMI in $REGION..."
+          if packer build \
+            -var "aws_region=$REGION" \
+            appliance/packer-file-AMI-rhel9.json; then
+            BUILD_RESULTS["rhel9-$REGION"]="SUCCESS"
+            
+            AMI_ID=$(aws ec2 describe-images \
+              --region $REGION \
+              --owners self \
+              --filters "Name=name,Values=optix-appliance-rhel9-*" \
+              --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' \
+              --output text)
+            
+            echo "RHEL9 AMI ID in $REGION: $AMI_ID"
+          else
+            BUILD_RESULTS["rhel9-$REGION"]="FAILED"
+          fi
+        done
+        
+        # Print summary
+        echo "========================================="
+        echo "Build Summary"
+        echo "========================================="
+        
+        FAILED_COUNT=0
+        for BUILD in "${!BUILD_RESULTS[@]}"; do
+          if [ "${BUILD_RESULTS[$BUILD]}" == "SUCCESS" ]; then
+            echo "✓ $BUILD: SUCCESS"
+          else
+            echo "✗ $BUILD: FAILED"
+            ((FAILED_COUNT++))
+          fi
+        done
+        
+        if [ $FAILED_COUNT -gt 0 ]; then
+          echo "Warning: $FAILED_COUNT builds failed"
+          exit 1
+        else
+          echo "All builds completed successfully!"
+        fi
+      
+  post_build:
+    commands:
+      - echo "Build completed on $(date)"
+      - |
+        # Optionally copy AMIs to additional regions
+        if [ ! -z "$COPY_TO_REGIONS" ]; then
+          echo "Copying AMIs to additional regions..."
+          IFS=',' read -r -a COPY_REGIONS <<< "$COPY_TO_REGIONS"
+          IFS=',' read -r -a SOURCE_REGIONS <<< "$AWS_REGIONS"
+          
+          for SOURCE_REGION in "${SOURCE_REGIONS[@]}"; do
+            SOURCE_REGION=$(echo $SOURCE_REGION | xargs)
+            
+            # Get latest AMI IDs from source region
+            UBUNTU_AMI=$(aws ec2 describe-images \
+              --region $SOURCE_REGION \
+              --owners self \
+              --filters "Name=name,Values=optix-appliance-*" \
+              --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' \
+              --output text)
+            
+            for TARGET_REGION in "${COPY_REGIONS[@]}"; do
+              TARGET_REGION=$(echo $TARGET_REGION | xargs)
+              
+              if [ "$SOURCE_REGION" != "$TARGET_REGION" ]; then
+                echo "Copying AMI $UBUNTU_AMI from $SOURCE_REGION to $TARGET_REGION..."
+                aws ec2 copy-image \
+                  --source-region $SOURCE_REGION \
+                  --source-image-id $UBUNTU_AMI \
+                  --region $TARGET_REGION \
+                  --name "optix-appliance-copied-$(date +%s)"
+              fi
+            done
+          done
+        fi
+      
+artifacts:
+  files:
+    - '**/*.log'
+  name: optix-ami-build-$(date +%Y%m%d)

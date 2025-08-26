@@ -1,0 +1,78 @@
+{
+  "name": "optix-monthly-ami-build",
+  "description": "Monthly automated AMI builds for Optix Appliance across multiple regions",
+  "source": {
+    "type": "GITHUB",
+    "location": "https://github.com/YOUR_ORG/optix-appliance-iac.git",
+    "buildspec": "aws-codebuild/buildspec.yml"
+  },
+  "artifacts": {
+    "type": "S3",
+    "location": "optix-ami-build-artifacts",
+    "packaging": "ZIP",
+    "name": "build-logs"
+  },
+  "environment": {
+    "type": "LINUX_CONTAINER",
+    "image": "aws/codebuild/standard:7.0",
+    "computeType": "BUILD_GENERAL1_MEDIUM",
+    "environmentVariables": [
+      {
+        "name": "AWS_REGIONS",
+        "value": "/optix/build-regions",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_VPC_ID_DEFAULT",
+        "value": "/optix/vpc-id-default",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_SUBNET_ID_DEFAULT",
+        "value": "/optix/subnet-id-default",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_VPC_ID_us_east_1",
+        "value": "/optix/vpc-id-us-east-1",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_SUBNET_ID_us_east_1",
+        "value": "/optix/subnet-id-us-east-1",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_VPC_ID_us_west_2",
+        "value": "/optix/vpc-id-us-west-2",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_SUBNET_ID_us_west_2",
+        "value": "/optix/subnet-id-us-west-2",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_VPC_ID_eu_west_1",
+        "value": "/optix/vpc-id-eu-west-1",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_SUBNET_ID_eu_west_1",
+        "value": "/optix/subnet-id-eu-west-1",
+        "type": "PARAMETER_STORE"
+      },
+      {
+        "name": "AWS_INSTANCE_TYPE",
+        "value": "t3.micro"
+      },
+      {
+        "name": "COPY_TO_REGIONS",
+        "value": "/optix/copy-to-regions",
+        "type": "PARAMETER_STORE"
+      }
+    ]
+  },
+  "serviceRole": "arn:aws:iam::ACCOUNT_ID:role/codebuild-optix-ami-role",
+  "timeoutInMinutes": 180
+}
