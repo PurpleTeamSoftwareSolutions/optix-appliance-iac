@@ -1,23 +1,24 @@
 {
   "variables": {
     "optix_appliance_name": "optix-cloud-{{ timestamp }}.qcow2",
-    "http_directory": "http/",
-    "iso_url": "https://releases.ubuntu.com/noble/ubuntu-24.04.1-live-server-amd64.iso",
-    "iso_checksum": "sha256:e240e4b801f7bb68c20d1356b60968ad0c33a41d00d828e74ceb3364a0317be9"
+    "http_directory": "http/"
   },
   "builders": [
     {
       "type": "qemu",
-      "iso_url": "{{user `iso_url`}}",
-      "iso_checksum": "{{user `iso_checksum`}}",
-      "boot_wait": "3s",
-      "boot_command": [
-        "c",
-        "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' ",
-        "initrd /casper/initrd<enter>",
-        "boot<enter>"
+      "iso_url": "ubuntu-24.04.2-live-server-amd64.iso",
+      "iso_checksum": "sha256:d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d",
+      "boot_wait": "5s",
+      "cd_files": [
+        "{{user `http_directory`}}meta-data",
+        "{{user `http_directory`}}user-data"
       ],
-      "http_directory": "{{user `http_directory`}}",
+      "cd_label": "cidata",
+      "boot_command": [
+        "e<down><down><down><end>",
+        " autoinstall ds=nocloud;",
+        "<F10>"
+      ],
       "shutdown_command": "sudo poweroff",
       "ssh_username": "ubuntu",
       "ssh_password": "Youshou1dch@ng3measap",
