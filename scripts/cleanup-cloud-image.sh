@@ -8,6 +8,7 @@ chown root:root /tmp/sudoers
 mv /tmp/sudoers /etc/sudoers
 
 echo "Remove unnecessary packages for cloud image"
+# Remove only safe packages, keep critical system components
 apt-get purge -y \
     linux-firmware \
     linux-modules-extra-* \
@@ -23,9 +24,7 @@ apt-get purge -y \
     pppconfig \
     pppoeconf \
     ufw \
-    iptables \
     apparmor \
-    plymouth* \
     ubuntu-advantage-tools \
     ubuntu-release-upgrader-core \
     update-manager-core \
@@ -35,26 +34,22 @@ apt-get purge -y \
     sosreport \
     bcache-tools \
     btrfs-progs \
-    lvm2 \
-    mdadm \
     ntfs-3g \
     xfsprogs \
     eject \
     pastebinit \
     byobu \
-    && true
+    || true
 
-echo "Remove all development packages"
+echo "Remove development packages (keep essential system packages)"
+# Be selective about removing development packages
+# Don't remove libc6-dev, libcrypt-dev, linux-libc-dev as they may be dependencies
 apt-get purge -y \
-    *-dev \
-    *-headers \
     build-essential \
     gcc \
     g++ \
     make \
-    perl \
-    perl-modules-* \
-    && true
+    || true
 
 echo "Remove documentation and locales"
 rm -rf /usr/share/doc/*
@@ -66,8 +61,10 @@ find /var/cache/debconf -type f -name '*-old' -delete
 rm -rf /var/lib/apt/lists/*
 
 echo "Keep only essential locales"
+# Ensure locales package is installed before using locale-gen
+apt-get install -y locales || true
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-locale-gen
+locale-gen || true
 echo "LANG=en_US.UTF-8" > /etc/default/locale
 
 echo "Configure universal netplan config"
@@ -206,8 +203,11 @@ echo "Install GPG key and repo"
 wget -O - https://apt.fury.io/purpleteamsoftware/gpg.key | gpg --dearmor -o /usr/share/keyrings/purpleteamsoftware-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/purpleteamsoftware-archive-keyring.gpg] https://apt.purpleteamsoftware.com/ /" | tee /etc/apt/sources.list.d/purpleteamsoftware.list
 
-echo "Remove orphaned packages"
-deborphan --guess-all | xargs -r apt-get purge -y || true
+echo "Remove orphaned packages (if deborphan is available)"
+# Only run if deborphan is installed
+if command -v deborphan >/dev/null 2>&1; then
+    deborphan --guess-all | xargs -r apt-get purge -y || true
+fi
 
 echo "Zero out free space for better compression"
 dd if=/dev/zero of=/ZERO bs=1M || true
